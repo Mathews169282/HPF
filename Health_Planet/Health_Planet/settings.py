@@ -38,6 +38,7 @@ ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
     ".onrender.com",
+    ".vercel.app",
     "healthyplanetzambia.co.za",
     ".healthyplanetzambia.co.za",
 ]
@@ -54,7 +55,7 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get(
         "CSRF_TRUSTED_ORIGINS",
-        "https://*.onrender.com",
+        "https://*.onrender.com,https://*.vercel.app",
     ).split(",")
     if origin.strip()
 ]

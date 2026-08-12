@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "Health_Planet/wsgi.py": {
+      "maxDuration": 60
+    }
+  },
+  "buildCommand": "python Health_Planet/manage.py collectstatic --noinput && python Health_Planet/manage.py migrate --noinput"
+}

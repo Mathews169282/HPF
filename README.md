@@ -167,6 +167,37 @@ python Health_Planet/manage.py createsuperuser
 
 Do not run `makemigrations` on Render. Migration files should be committed locally and pushed to GitHub.
 
+## Vercel Deployment
+
+Vercel automatically detects Django projects and deploys them as serverless functions. This repository includes a `vercel.json` configuration for Vercel.
+
+Build command:
+
+```bash
+python Health_Planet/manage.py collectstatic --noinput && python Health_Planet/manage.py migrate --noinput
+```
+
+Required environment variables:
+
+```text
+SECRET_KEY=...
+DEBUG=False
+DATABASE_URL=postgresql://...
+DATABASE_SSL_REQUIRE=True
+ALLOWED_HOSTS=your-project.vercel.app,.vercel.app
+CSRF_TRUSTED_ORIGINS=https://your-project.vercel.app,https://*.vercel.app
+```
+
+Use Vercel Postgres or an external PostgreSQL provider. Vercel automatically sets `DATABASE_URL` when you add a Postgres integration.
+
+Static files are collected during build and served through the Vercel CDN. Admin-uploaded media files use filesystem storage under `Health_Planet/media/` and are not durable between deployments unless you use external storage.
+
+After deployment, create an admin account from the Vercel shell:
+
+```bash
+python Health_Planet/manage.py createsuperuser
+```
+
 ## Admin Content
 
 The Django admin can update:
