@@ -43,6 +43,8 @@ def site_content(request):
         }
         return {
             "site_settings": settings,
+            "site_url": request.build_absolute_uri("/"),
+            "site_logo_url": request.build_absolute_uri(settings.logo_url) if settings.logo_url else request.build_absolute_uri("/static/images/HPF-logo.jpeg"),
             "navigation_items_before_focus": navigation_items_before_focus,
             "navigation_items_after_focus": navigation_items_after_focus,
             "navigation_ctas": list_or_default(
@@ -64,6 +66,8 @@ def site_content(request):
     except (OperationalError, ProgrammingError):
         return {
             "site_settings": defaults.SITE_SETTINGS,
+            "site_url": "/",
+            "site_logo_url": "/static/images/HPF-logo.jpeg",
             "navigation_items_before_focus": defaults.NAVIGATION_BEFORE_FOCUS,
             "navigation_items_after_focus": defaults.NAVIGATION_AFTER_FOCUS,
             "navigation_ctas": defaults.NAVIGATION_CTAS,

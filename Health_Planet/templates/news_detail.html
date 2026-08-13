@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ item.title }} | News | Health Planet Foundation{% endblock %}
+{% block title %}{{ seo_title|default:item.title }}{% endblock %}
 
 {% block content %}
-<article class="news-article">
+<article class="news-article" itemscope itemtype="https://schema.org/NewsArticle">
     <section class="article-hero"{% if item.image_url %} style="--article-hero-bg: url('{{ item.image_url }}');"{% endif %}>
         {% include "partials/hero_backgrounds.html" with primary_image=item.image_url %}
         <div class="container article-hero-inner">
@@ -60,5 +60,28 @@
             </aside>
         </div>
     </section>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      "headline": "{{ item.title|escapejs }}",
+      "description": "{{ item.summary|escapejs }}",
+      "image": "{{ item.image_url|default:seo_image }}",
+      {% if item.event_date %}"datePublished": "{{ item.event_date|date:'c' }}",{% endif %}
+      {% if item.submitted_at %}"datePublished": "{{ item.submitted_at|date:'c' }}",{% endif %}
+      "author": {
+        "@type": "Organization",
+        "name": "{{ site_settings.organization_name|default:'Health Planet Foundation' }}"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "{{ site_settings.organization_name|default:'Health Planet Foundation' }}",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "{{ site_logo_url }}"
+        }
+      }
+    }
+    </script>
 </article>
 {% endblock %}

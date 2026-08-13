@@ -10,18 +10,76 @@
     <meta property="og:site_name" content="{{ site_settings.organization_name|default:'Health Planet Foundation' }}">
     <meta property="og:title" content="{{ seo_title|default:site_settings.organization_name|default:'Health Planet Foundation' }}">
     <meta property="og:description" content="{{ seo_description|default:site_settings.footer_about|default:'Health Planet Foundation advances community health and climate resilience.' }}">
-    <meta property="og:type" content="website">
+    <meta property="og:type" content="{{ og_type|default:'website' }}">
     {% if canonical_url %}<meta property="og:url" content="{{ canonical_url }}">{% endif %}
     {% if seo_image %}<meta property="og:image" content="{{ seo_image }}">{% endif %}
+    {% if seo_image_alt %}<meta property="og:image:alt" content="{{ seo_image_alt }}">{% endif %}
     <meta name="twitter:card" content="{% if seo_image %}summary_large_image{% else %}summary{% endif %}">
     <meta name="twitter:title" content="{{ seo_title|default:site_settings.organization_name|default:'Health Planet Foundation' }}">
     <meta name="twitter:description" content="{{ seo_description|default:site_settings.footer_about|default:'Health Planet Foundation advances community health and climate resilience.' }}">
     {% if seo_image %}<meta name="twitter:image" content="{{ seo_image }}">{% endif %}
+    {% if seo_image_alt %}<meta name="twitter:image:alt" content="{{ seo_image_alt }}">{% endif %}
+    {% if article_published_time %}<meta property="article:published_time" content="{{ article_published_time|date:'c' }}">{% endif %}
+    {% if article_modified_time %}<meta property="article:modified_time" content="{{ article_modified_time|date:'c' }}">{% endif %}
     <title>{% block title %}{{ site_settings.organization_name|default:"Health Planet Foundation" }}{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260526-impact-applications-2">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "{{ site_settings.organization_name|default:'Health Planet Foundation' }}",
+      "url": "{{ site_url }}",
+      "logo": "{{ site_logo_url }}",
+      "description": "{{ site_settings.footer_about|default:'Health Planet Foundation advances community health, climate resilience, safe motherhood, and mental wellness.' }}",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "{{ site_settings.location|default:'Lusaka' }}",
+        "addressCountry": "ZM"
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "{{ site_settings.email|default:'healthyplanetfoundation@gmail.com' }}",
+        "telephone": "{{ site_settings.phone|default:'+260971693902' }}",
+        "contactType": "general"
+      },
+      "sameAs": []
+    }
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "{{ site_settings.organization_name|default:'Health Planet Foundation' }}",
+      "url": "{{ site_url }}",
+      "description": "{{ site_settings.footer_about|default:'Health Planet Foundation advances community health, climate resilience, safe motherhood, and mental wellness.' }}",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "{{ site_url }}?s={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+    {% if breadcrumbs %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {% for crumb in breadcrumbs %}
+        {
+          "@type": "ListItem",
+          "position": {{ forloop.counter }},
+          "name": "{{ crumb.name|escapejs }}",
+          "item": "{{ crumb.url|default:'#' }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+    </script>
+    {% endif %}
 </head>
 <body class="route-{{ request.resolver_match.url_name|default:'page' }}">
 <a class="skip-link" href="#main-content">Skip to content</a>

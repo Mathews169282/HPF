@@ -134,13 +134,33 @@ def notify_team(subject, body, recipient):
     )
 
 
-def seo_context(request, title, description, image_url=""):
+def seo_context(
+    request,
+    title,
+    description,
+    image_url="",
+    keywords=None,
+    og_type="website",
+    article_published_time=None,
+    article_modified_time=None,
+):
     return {
         "seo_title": title,
         "seo_description": description,
+        "seo_keywords": keywords or [],
         "seo_image": request.build_absolute_uri(image_url) if image_url else "",
+        "seo_image_alt": "",
         "canonical_url": request.build_absolute_uri(request.path),
+        "og_type": og_type,
+        "article_published_time": article_published_time,
+        "article_modified_time": article_modified_time,
     }
+
+
+def build_breadcrumbs(request, items):
+    crumbs = [{"name": "Home", "url": request.build_absolute_uri(reverse("home"))}]
+    crumbs.extend(items)
+    return crumbs
 
 
 def base_page_context(slug, request=None):
@@ -151,14 +171,17 @@ def base_page_context(slug, request=None):
         "hero_slides": get_page_hero_slides(slug, page),
     }
     if request:
+        page_image_url = getattr(page, "image_url", "")
+        page_image_alt = getattr(page, "image_alt", "") or getattr(page, "hero_title", "")
         context.update(
             seo_context(
                 request,
                 getattr(page, "meta_title", "") or getattr(page, "title", ""),
                 getattr(page, "meta_description", "") or getattr(page, "hero_text", ""),
-                getattr(page, "image_url", ""),
+                page_image_url,
             )
         )
+        context["seo_image_alt"] = page_image_alt
     return context
 
 
@@ -248,6 +271,9 @@ def about(request):
         }
     )
     context["hero_slides"] = get_page_hero_slides("about", context["page"], about_slides)
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "About", "url": reverse("about")},
+    ])
     return render(request, "about.html", context)
 
 
@@ -259,6 +285,9 @@ def projects(request):
     )
     context["projects"] = projects
     context["hero_slides"] = get_page_hero_slides("projects", context["page"], projects)
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "Projects", "url": reverse("projects")},
+    ])
     return render(request, "projects.html", context)
 
 
@@ -311,8 +340,22 @@ def project_detail(request, slug):
             f"{project.title} | Impact | Health Planet Foundation",
             project.description,
             getattr(project, "image_url", ""),
+            keywords=[
+                "Health Planet Foundation",
+                "community health Zambia",
+                "climate resilience Zambia",
+                "project impact Zambia",
+                "public health Zambia",
+                "NGO Zambia",
+            ],
+            og_type="article",
         )
     )
+    context["seo_image_alt"] = getattr(project, "image_alt", "") or project.title
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "Projects", "url": reverse("projects")},
+        {"name": project.title, "url": project.detail_href},
+    ])
     return render(request, "project_detail.html", context)
 
 
@@ -338,8 +381,20 @@ def focus_area(request, slug):
             f"{area.title} | Health Planet Foundation",
             area.summary,
             getattr(area, "image_url", ""),
+            keywords=[
+                "Health Planet Foundation",
+                "community health Zambia",
+                "climate resilience Zambia",
+                "public health Zambia",
+                "NGO Zambia",
+                area.title,
+            ],
         )
     )
+    context["seo_image_alt"] = getattr(area, "image_alt", "") or area.title
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": area.title, "url": reverse("focus_area", kwargs={"slug": area.slug})},
+    ])
     return render(request, "focus_area.html", context)
 
 
@@ -351,6 +406,9 @@ def news(request):
     )
     context["news_items"] = news_items
     context["hero_slides"] = get_page_hero_slides("news", context["page"], news_items)
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "News", "url": reverse("news")},
+    ])
     return render(request, "news.html", context)
 
 
@@ -408,8 +466,23 @@ def news_detail(request, slug):
             f"{item.title} | News | Health Planet Foundation",
             item.summary,
             getattr(item, "image_url", ""),
+            keywords=[
+                "Health Planet Foundation",
+                "community health Zambia",
+                "news Zambia",
+                "public health Zambia",
+                "NGO Zambia",
+                "Lusaka Zambia",
+            ],
+            og_type="article",
+            article_published_time=getattr(item, "event_date", None),
         )
     )
+    context["seo_image_alt"] = getattr(item, "image_alt", "") or item.title
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "News", "url": reverse("news")},
+        {"name": item.title, "url": item.detail_href},
+    ])
     return render(request, "news_detail.html", context)
 
 
@@ -424,6 +497,9 @@ def careers(request):
         defaults.CAREER_OPENINGS,
     )
     context["hero_slides"] = get_page_hero_slides("careers", context["page"], hero_sources)
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "Careers", "url": reverse("careers")},
+    ])
     return render(request, "careers.html", context)
 
 
@@ -438,6 +514,9 @@ def internships(request):
         defaults.INTERNSHIPS,
     )
     context["hero_slides"] = get_page_hero_slides("internships", context["page"], hero_sources)
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "Internships", "url": reverse("internships")},
+    ])
     return render(request, "internships.html", context)
 
 
@@ -515,6 +594,10 @@ def application_page(request, application_type):
             getattr(context["page"], "image_url", ""),
         )
     )
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "Careers" if is_career else "Internships", "url": reverse(page_slug)},
+        {"name": "Apply", "url": reverse(redirect_name)},
+    ])
     return render(request, "application.html", context)
 
 
@@ -571,6 +654,9 @@ def donate(request):
         }
     )
     context["hero_slides"] = get_page_hero_slides("donate", context["page"], hero_sources)
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "Donate", "url": reverse("donate")},
+    ])
     return render(request, "donate.html", context)
 
 
@@ -607,11 +693,18 @@ def contact(request):
             *defaults.HERO_SLIDES.get("contact", []),
         ],
     )
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "Contact", "url": reverse("contact")},
+    ])
     return render(request, "contact.html", context)
 
 
 def privacy(request):
-    return render(request, "privacy.html", base_page_context("privacy", request))
+    context = base_page_context("privacy", request)
+    context["breadcrumbs"] = build_breadcrumbs(request, [
+        {"name": "Privacy Notice", "url": reverse("privacy")},
+    ])
+    return render(request, "privacy.html", context)
 
 
 def robots_txt(request):
