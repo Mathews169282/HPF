@@ -1,0 +1,2 @@
+[tool.vercel]
+entrypoint = "Health_Planet.wsgi:application"
